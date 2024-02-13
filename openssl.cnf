@@ -1,0 +1,26 @@
+[ ca_ext ]
+basicConstraints        = critical, CA:true, pathlen:0
+keyUsage                = critical, cRLSign, digitalSignature, keyCertSign
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always, issuer:always
+
+[ server_ext ]
+basicConstraints        = CA:FALSE
+keyUsage                = critical, digitalSignature, keyEncipherment
+extendedKeyUsage        = critical, serverAuth, clientAuth
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always, issuer:always
+
+[ client_ext ]
+basicConstraints        = CA:FALSE
+keyUsage                = critical, nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage        = critical, clientAuth, emailProtection
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always, issuer:always
+
+[ user_ext ]
+basicConstraints        = CA:FALSE
+keyUsage                = critical, digitalSignature
+extendedKeyUsage        = critical, clientAuth, emailProtection
+subjectKeyIdentifier    = hash
+authorityKeyIdentifier  = keyid:always, issuer:always
