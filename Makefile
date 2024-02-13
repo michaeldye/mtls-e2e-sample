@@ -11,7 +11,7 @@ SERVER_IP ?= 127.2.1.1
 SERVER_CN ?= myserver.cluster.local
 CLIENT_CN ?= myclient.cluster.local
 ROOT_CA_CN ?= root-ca.cluster.local
-INTERM_CA_CN ?= intermediary-ca.cluster.local
+INTERM_CA_CN ?= intermediate-ca.cluster.local
 
 SUBJ = /C=US/ST=UT/L=Salt Lake City/O=OBS/OU=SRE/CN=
 subj = $(addprefix $(SUBJ),$(1))
@@ -36,7 +36,7 @@ root-ca-cert.pem: passphrase.txt
 	@echo "$@"
 	openssl req -x509 -sha256 -newkey rsa:$(KEYSIZE) -days $(CERT_DAYS) -subj "$(call subj,$(ROOT_CA_CN))" -passout file:passphrase.txt -keyout root-ca-key.pem -out $@
 
-# intermediary CA
+# intermediate CA
 
 interm-ca: interm-ca-cert.pem
 interm-ca-cert.pem: interm-ca.csr.pem root-ca-cert.pem
@@ -47,7 +47,7 @@ interm-ca.csr.pem: passphrase.txt
 	@echo "$@"
 	umask 077 && openssl req -newkey rsa:$(KEYSIZE) -subj "$(call subj,$(INTERM_CA_CN))" -passout file:passphrase.txt -keyout interm-ca-key.pem -out $@
 
-# server cert signed by intermediary CA
+# server cert signed by intermediate CA
 
 server: server-certchain.pem
 server.csr.pem: passphrase.txt
@@ -59,7 +59,7 @@ server-cert.pem: server.csr.pem interm-ca-cert.pem
 	@echo "$@"
 	openssl x509 -req -days $(CERT_DAYS) -extfile openssl.cnf -extensions server_ext -copy_extensions copy -passin file:passphrase.txt -in $< -CA interm-ca-cert.pem -CAkey interm-ca-key.pem -set_serial 02 -out $@
 
-# apps want this; order: 1:server_cert; 2:intermediary (signed by CA), which is trusted and so there is no need to put it in the bundle
+# apps want this; order: 1:server_cert; 2:intermediate (signed by CA), which is trusted and so there is no need to put it in the bundle
 # more info: https://tools.ietf.org/html/rfc5246#page-47
 server-certchain.pem: server-cert.pem interm-ca-cert.pem
 	@echo "$@"
@@ -94,9 +94,9 @@ show: pki
 
 validate: pki
 	@echo "$@"
-	@echo "++ This looks weird b/c the intermediary is marked 'untrusted', but it is right: we trust the root ca (specified with CAfile) and want to verify a chain of trust from the signed server cert back to our CA, which is trusted. We never want to give an untrusted intermediary cert as an arg to CAfile b/c that considers it trusted. More useful info at https://mail.python.org/pipermail/cryptography-dev/2016-August/000676.html"
+	@echo "++ This looks weird b/c the intermediate is marked 'untrusted', but it is right: we trust the root ca (specified with CAfile) and want to verify a chain of trust from the signed server cert back to our CA, which is trusted. We never want to give an untrusted intermediate cert as an arg to CAfile b/c that considers it trusted. More useful info at https://mail.python.org/pipermail/cryptography-dev/2016-August/000676.html"
 	openssl verify -verbose -show_chain -CAfile root-ca-cert.pem -untrusted interm-ca-cert.pem server-cert.pem
-	@echo "++ This looks even weirder but is still a valid alternative to the nasty business of trusting an intermediary CA you shouldn't trust"
+	@echo "++ This looks even weirder but is still a valid alternative to the nasty business of trusting an intermediate CA you shouldn't trust"
 	openssl verify -verbose -show_chain -CAfile root-ca-cert.pem -untrusted server-certchain.pem server-certchain.pem
 	@echo "++ This is only as weird as the first"
 	openssl verify -verbose -show_chain -CAfile root-ca-cert.pem -untrusted interm-ca-cert.pem client-cert.pem
