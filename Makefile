@@ -13,7 +13,7 @@ CLIENT_CN ?= myclient.cluster.local
 ROOT_CA_CN ?= root-ca.cluster.local
 INTERM_CA_CN ?= intermediate-ca.cluster.local
 
-SUBJ = /C=US/ST=UT/L=Salt Lake City/O=OBS/OU=SRE/CN=
+SUBJ = /C=US/ST=CA/L=Camarillo/O=LULZ/OU=DEV/CN=
 subj = $(addprefix $(SUBJ),$(1))
 
 ifndef VERBOSE:

@@ -4,7 +4,7 @@
 
 ### TODO
 
-* Demonstrate giving a multi-root CA bundle to the server and client for trust
+* Demonstrate cross-signed certs
 
 ## Use
 
